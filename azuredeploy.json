@@ -23,6 +23,17 @@
         "description": "CIDR prefix for the LAN subnet."
       }
     },
+    "addServerStorageType": {
+      "type": "string",
+      "defaultValue": "Standard_LRS",
+      "allowedValues": [
+        "Standard_LRS",
+        "Standard_ZRS",
+        "Standard_GRS",
+        "Standard_RAGRS",
+        "Premium_LRS"
+      ]
+    },
     "_artifactsLocation": {
       "type": "string",
       "defaultValue": "https://raw.githubusercontent.com/millusdk/Arm-two-tier-app/master"
@@ -65,7 +76,10 @@
         "name": "[concat(resourceGroup().name, '-as-add')]",
         "updateDomainCount": 2,
         "faultDomainCount": 2
-      }
+      },
+      "storage": {
+        "type": "[parameters('addServerStorageType')]"  
+      } 
     },
     "nestedTemplates": {
       "folder": "nestedtemplates",
@@ -112,7 +126,7 @@
         "mode": "Incremental",
         "templateLink": {
           "uri": "[concat(parameters('_artifactsLocation'), '/', variables('nestedTemplates').folder, '/', variables('nestedTemplates').servers.folder, '/', variables('nestedTemplates').servers.addServer)]",
-          "contentVersion": "0.2.1.0"
+          "contentVersion": "0.3.0.0"
         },
         "parameters": {
           "addServer": {
