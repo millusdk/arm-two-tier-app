@@ -1,0 +1,411 @@
+﻿{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "0.1.0.0",
+  "parameters": {
+    "vnet": {
+      "type": "object"
+    }
+  },
+  "variables": {
+  },
+  "resources": [
+    {
+      "name": "[parameters('vnet').name]",
+      "type": "Microsoft.Network/virtualNetworks",
+      "location": "[resourceGroup().location]",
+      "apiVersion": "2016-03-30",
+      "dependsOn": [],
+      "tags": {
+        "displayName": "Vnet"
+      },
+      "properties": {
+        "addressSpace": {
+          "addressPrefixes": [
+            "[parameters('vnet').prefix]"
+          ]
+        },
+        "subnets": [
+          {
+            "name": "[parameters('vnet').subnets.dmz.name]",
+            "properties": {
+              "addressPrefix": "[parameters('vnet').subnets.dmz.prefix]"
+            }
+          },
+          {
+            "name": "[parameters('vnet').subnets.lan.name]",
+            "properties": {
+              "addressPrefix": "[parameters('vnet').subnets.lan.prefix]"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "2015-06-15",
+      "type": "Microsoft.Network/networkSecurityGroups",
+      "name": "[parameters('vnet').dmz.nsg.name]",
+      "location": "[resourceGroup().location]",
+      "tags": {
+        "displayName": "NSG - DMZ"
+      },
+      "properties": {
+        "securityRules": [
+          {
+            "name": "DMZ_TO_INTERNET_HTTP",
+            "properties": {
+              "description": "Allow HTTP from DMZ to internet",
+              "protocol": "Tcp",
+              "sourcePortRange": "*",
+              "destinationPortRange": "80",
+              "sourceAddressPrefix": "[parameters('vnet').dmz.prefix]",
+              "destinationAddressPrefix": "*",
+              "access": "Allow",
+              "priority": 100,
+              "direction": "Outbound"
+            }
+          },
+          {
+            "name": "DMZ_TO_INTERNET_HTTPS",
+            "properties": {
+              "description": "Allow HTTPS from DMZ to internet",
+              "protocol": "Tcp",
+              "sourcePortRange": "*",
+              "destinationPortRange": "443",
+              "sourceAddressPrefix": "[parameters('vnet').dmz.prefix]",
+              "destinationAddressPrefix": "*",
+              "access": "Allow",
+              "priority": 101,
+              "direction": "Outbound"
+            }
+          },
+          {
+            "name": "INTERNET_TO_DMZ_HTTP",
+            "properties": {
+              "description": "Allow HTTP from internet to DMZ",
+              "protocol": "Tcp",
+              "sourcePortRange": "*",
+              "destinationPortRange": "80",
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefix": "[parameters('vnet').dmz.prefix]",
+              "access": "Allow",
+              "priority": 100,
+              "direction": "Inbound"
+            }
+          },
+          {
+            "name": "INTERNET_TO_DMZ_HTTPS",
+            "properties": {
+              "description": "Allow HTTPS from internet to DMZ",
+              "protocol": "Tcp",
+              "sourcePortRange": "*",
+              "destinationPortRange": "443",
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefix": "[parameters('vnet').dmz.prefix]",
+              "access": "Allow",
+              "priority": 101,
+              "direction": "Inbound"
+            }
+          },
+          {
+            "name": "rdp-inbound",
+            "properties": {
+              "description": "Allow rdp internet",
+              "protocol": "*",
+              "sourcePortRange": "*",
+              "destinationPortRange": "3389",
+              "sourceAddressPrefix": "Internet",
+              "destinationAddressPrefix": "[parameters('vnet').dmz.prefix]",
+              "access": "Allow",
+              "priority": 150,
+              "direction": "Inbound"
+            }
+          },
+          {
+            "name": "block-internet-inbound",
+            "properties": {
+              "description": "Block Internet",
+              "protocol": "*",
+              "sourcePortRange": "*",
+              "destinationPortRange": "*",
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefix": "Internet",
+              "access": "Deny",
+              "priority": 200,
+              "direction": "Inbound"
+            }
+          },
+          {
+            "name": "block-internet-outbound",
+            "properties": {
+              "description": "Block Internet",
+              "protocol": "*",
+              "sourcePortRange": "*",
+              "destinationPortRange": "*",
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefix": "Internet",
+              "access": "Deny",
+              "priority": 200,
+              "direction": "Outbound"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "2015-06-15",
+      "type": "Microsoft.Network/networkSecurityGroups",
+      "name": "[parameters('vnet').lan.nsg.name]",
+      "location": "[resourceGroup().location]",
+      "tags": {
+        "displayName": "NSG - LAN"
+      },
+      "properties": {
+        "securityRules": [
+          {
+            "name": "DMZ_TO_LAN_SQL",
+            "properties": {
+              "description": "Allow SQL from DMZ to LAN",
+              "protocol": "Tcp",
+              "sourcePortRange": "*",
+              "destinationPortRange": "1433",
+              "sourceAddressPrefix": "[parameters('vnet').dmz.prefix]",
+              "destinationAddressPrefix": "[parameters('vnet').lan.prefix]",
+              "access": "Allow",
+              "priority": 100,
+              "direction": "Inbound"
+            }
+          },
+          {
+            "name": "DMZ_TO_LAN_DNS",
+            "properties": {
+              "description": "Allow DNS from LAN to internet",
+              "protocol": "Udp",
+              "sourcePortRange": "*",
+              "destinationPortRange": "53",
+              "sourceAddressPrefix": "[parameters('vnet').dmz.prefix]",
+              "destinationAddressPrefix": "[parameters('vnet').lan.prefix]",
+              "access": "Allow",
+              "priority": 101,
+              "direction": "Inbound"
+            }
+          },
+          {
+            "name": "INTERNET_TO_LAN_DNS",
+            "properties": {
+              "description": "Allow DNS from LAN to internet",
+              "protocol": "Udp",
+              "sourcePortRange": "*",
+              "destinationPortRange": "53",
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefix": "[parameters('vnet').lan.prefix]",
+              "access": "Allow",
+              "priority": 102,
+              "direction": "Inbound"
+            }
+          },
+          {
+            "name": "DMZ_TO_LAN_Kerberos",
+            "properties": {
+              "description": "Allow Kerberos from DMZ to LAN",
+              "protocol": "Udp",
+              "sourcePortRange": "*",
+              "destinationPortRange": "88",
+              "sourceAddressPrefix": "[parameters('vnet').dmz.prefix]",
+              "destinationAddressPrefix": "[parameters('vnet').lan.prefix]",
+              "access": "Allow",
+              "priority": 103,
+              "direction": "Inbound"
+            }
+          },
+          {
+            "name": "DMZ_TO_LAN_Authentication",
+            "properties": {
+              "description": "Allow Authentication from DMZ to LAN",
+              "protocol": "*",
+              "sourcePortRange": "*",
+              "destinationPortRange": "88",
+              "sourceAddressPrefix": "[parameters('vnet').dmz.prefix]",
+              "destinationAddressPrefix": "[parameters('vnet').lan.prefix]",
+              "access": "Allow",
+              "priority": 104,
+              "direction": "Inbound"
+            }
+          },
+          {
+            "name": "DMZ_TO_LAN_LDAP",
+            "properties": {
+              "description": "Allow LDAP from DMZ to LAN",
+              "protocol": "Udp",
+              "sourcePortRange": "*",
+              "destinationPortRange": "389",
+              "sourceAddressPrefix": "[parameters('vnet').dmz.prefix]",
+              "destinationAddressPrefix": "[parameters('vnet').lan.prefix]",
+              "access": "Allow",
+              "priority": 105,
+              "direction": "Inbound"
+            }
+          },
+          {
+            "name": "DMZ_TO_LAN_AD_File_Replication",
+            "properties": {
+              "description": "Allow File replication from DMZ to LAN",
+              "protocol": "*",
+              "sourcePortRange": "*",
+              "destinationPortRange": "445",
+              "sourceAddressPrefix": "[parameters('vnet').dmz.prefix]",
+              "destinationAddressPrefix": "[parameters('vnet').lan.prefix]",
+              "access": "Allow",
+              "priority": 106,
+              "direction": "Inbound"
+            }
+          },
+          {
+            "name": "DMZ_TO_LAN_Kerberos_Password_Change",
+            "properties": {
+              "description": "Allow Kerberos password change from DMZ to LAN",
+              "protocol": "*",
+              "sourcePortRange": "*",
+              "destinationPortRange": "464",
+              "sourceAddressPrefix": "[parameters('vnet').dmz.prefix]",
+              "destinationAddressPrefix": "[parameters('vnet').lan.prefix]",
+              "access": "Allow",
+              "priority": 107,
+              "direction": "Inbound"
+            }
+          },
+          {
+            "name": "DMZ_TO_LAN_Global_Catalog_1",
+            "properties": {
+              "description": "Allow Global catalog from DMZ to LAN",
+              "protocol": "Tcp",
+              "sourcePortRange": "*",
+              "destinationPortRange": "3268",
+              "sourceAddressPrefix": "[parameters('vnet').dmz.prefix]",
+              "destinationAddressPrefix": "[parameters('vnet').lan.prefix]",
+              "access": "Allow",
+              "priority": 108,
+              "direction": "Inbound"
+            }
+          },
+          {
+            "name": "DMZ_TO_LAN_Global_Catalog_2",
+            "properties": {
+              "description": "Allow Global catalog from DMZ to LAN",
+              "protocol": "Tcp",
+              "sourcePortRange": "*",
+              "destinationPortRange": "3269",
+              "sourceAddressPrefix": "[parameters('vnet').dmz.prefix]",
+              "destinationAddressPrefix": "[parameters('vnet').lan.prefix]",
+              "access": "Allow",
+              "priority": 109,
+              "direction": "Inbound"
+            }
+          },
+          {
+            "name": "LAN_TO_INTERNET_HTTP",
+            "properties": {
+              "description": "Allow HTTP from LAN to internet",
+              "protocol": "Tcp",
+              "sourcePortRange": "*",
+              "destinationPortRange": "80",
+              "sourceAddressPrefix": "[parameters('vnet').lan.prefix]",
+              "destinationAddressPrefix": "*",
+              "access": "Allow",
+              "priority": 100,
+              "direction": "Outbound"
+            }
+          },
+          {
+            "name": "LAN_TO_INTERNET_HTTPS",
+            "properties": {
+              "description": "Allow HTTPS from LAN to internet",
+              "protocol": "Tcp",
+              "sourcePortRange": "*",
+              "destinationPortRange": "443",
+              "sourceAddressPrefix": "[parameters('vnet').lan.prefix]",
+              "destinationAddressPrefix": "*",
+              "access": "Allow",
+              "priority": 101,
+              "direction": "Outbound"
+            }
+          },
+          {
+            "name": "LAN_TO_INTERNET_DNS",
+            "properties": {
+              "description": "Allow DNS from LAN to internet",
+              "protocol": "Udp",
+              "sourcePortRange": "*",
+              "destinationPortRange": "53",
+              "sourceAddressPrefix": "[parameters('vnet').lan.prefix]",
+              "destinationAddressPrefix": "Internet",
+              "access": "Allow",
+              "priority": 102,
+              "direction": "Outbound"
+            }
+          },
+          {
+            "name": "rdp-inbound",
+            "properties": {
+              "description": "Allow rdp internet",
+              "protocol": "*",
+              "sourcePortRange": "*",
+              "destinationPortRange": "3389",
+              "sourceAddressPrefix": "Internet",
+              "destinationAddressPrefix": "[parameters('vnet').lan.prefix]",
+              "access": "Allow",
+              "priority": 150,
+              "direction": "Inbound"
+            }
+          },
+          {
+            "name": "block-internet-inbound",
+            "properties": {
+              "description": "Block Internet",
+              "protocol": "*",
+              "sourcePortRange": "*",
+              "destinationPortRange": "*",
+              "sourceAddressPrefix": "Internet",
+              "destinationAddressPrefix": "*",
+              "access": "Deny",
+              "priority": 200,
+              "direction": "Inbound"
+            }
+          },
+          {
+            "name": "block-internet-outbound",
+            "properties": {
+              "description": "Block Internet",
+              "protocol": "*",
+              "sourcePortRange": "*",
+              "destinationPortRange": "*",
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefix": "Internet",
+              "access": "Deny",
+              "priority": 200,
+              "direction": "Outbound"
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "outputs": {
+    "vnet": {
+      "type": "object",
+      "value": {
+        "name": "[parameters('vnet').name]",
+        "ref": "[resourceId('Microsoft.Network/virtualNetworks', parameters('vnet').name)]",
+        "subnets": {
+          "dmz": {
+            "name": "[parameters('vnet').subnets.dmz.name]",
+            "ref": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('vnet').name, parameters('vnet').subnets.dmz.name)]"
+          },
+          "lan": {
+            "name": "[parameters('vnet').subnets.lan.name]",
+            "ref": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('vnet').name, parameters('vnet').subnets.lan.name)]"
+          }
+        } 
+      }
+    } 
+  }
+}

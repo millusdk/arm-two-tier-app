@@ -1,8 +1,82 @@
 {
   "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
-  "parameters": {},
-  "variables": {},
-  "resources": [],
-  "outputs": {}
+  "parameters": {
+    "vnetPrefix": {
+      "type": "string",
+      "defaultValue": "10.0.0.0/16",
+      "metadata": {
+        "description": "CIDR prefix for the VNet address space."
+      }
+    },
+    "vnetDmzPrefix": {
+      "type": "string",
+      "defaultValue": "10.0.0.0/24",
+      "metadata": {
+        "description": "CIDR prefix for the DMZ subnet."
+      }
+    },
+    "vnetLanPrefix": {
+      "type": "string",
+      "defaultValue": "10.0.1.0/24",
+      "metadata": {
+        "description": "CIDR prefix for the LAN subnet."
+      }
+    },
+    "_artifactsLocation": {
+      "type": "string"
+    }
+  },
+  "variables": {
+    "vnet": {
+      "name": "[concat(resourceGroup().name, '-vnet')]",
+      "prefix": "[parameters('vnetPrefix')]",
+
+      "subnets": {
+        "dmz": {
+          "name": "[concat(resourceGroup().name, '-vnet', '-dmz')]",
+          "prefix": "[parameters('vnetDmzPrefix')]",
+
+          "nsg": {
+            "name": "[concat(resourceGroup().name, '-vnet', '-dmz', '-nsg')]"
+          }
+        },
+        "lan": {
+          "name": "[concat(resourceGroup().name, '-vnet', '-lan')]",
+          "prefix": "[parameters('vnetLanPrefix')]",
+
+          "nsg": {
+            "name": "[concat(resourceGroup().name, '-vnet', '-lan', '-nsg')]"
+          }
+        }
+      }
+    },
+    "nestedTemplatesFolder": "nestedtemplates",
+    "infrastructureTemplatesFolder": "infrastructure", 
+    "VnetTemplateFileName": "vnet.json"
+  },
+  "resources": [
+    {
+      "name": "Vnet",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2016-09-01",
+      "dependsOn": [],
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[concat(parameters('_artifactsLocation'), '/', variables('nestedTemplatesFolder'), '/', variables('infrastructureTemplatesFolder'), '/', variables('vnetTemplateFileName'))]",
+          "contentVersion": "0.1.0.0"
+        },
+        "parameters": {
+          "vnet": "[variables('vnet')]" 
+        }
+      }
+    }
+  ],
+  "outputs": {
+    "vnet": {
+      "type": "object",
+      "value": "[reference('Vnet')]"
+    } 
+  }
 }
