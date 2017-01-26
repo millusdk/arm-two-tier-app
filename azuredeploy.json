@@ -91,7 +91,7 @@
       "disks": {
         "os": {
           "name": "[concat(resourceGroup().name, '-add01', '-os-disk')]",
-          "size": 50
+          "size": 128
         },
         "data": {
           "name": "[concat(resourceGroup().name, '-add01', '-data-disk')]",
