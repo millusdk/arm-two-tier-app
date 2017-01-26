@@ -1,12 +1,16 @@
 ﻿{
   "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
-  "contentVersion": "0.1.1.0",
+  "contentVersion": "0.2.0.0",
   "parameters": {
     "addServer": {
+      "type": "object"
+    },
+    "vnet": {
       "type": "object"
     }
   },
   "variables": {
+
   },
   "resources": [
     {
@@ -22,8 +26,46 @@
         "platformUpdateDomainCount": "[parameters('addServer').availabilitySet.updateDomainCount]",
         "platformFaultDomainCount": "[parameters('addServer').availabilitySet.faultDomainCount]"
       }
+    },
+    {
+      "name": "[concat(parameters('addServer').ip.name)]",
+      "type": "Microsoft.Network/publicIPAddresses",
+      "location": "[resourceGroup().location]",
+      "apiVersion": "2015-06-15",
+      "dependsOn": [],
+      "tags": {
+        "displayName": "addServerIp"
+      },
+      "properties": {
+        "publicIPAllocationMethod": "Static",
+        "dnsSettings": {
+          "domainNameLabel": "[parameters('addServer').name]"
+        }
+      }
+    },
+    {
+      "name": "[parameters('addServer').nic.name]",
+      "type": "Microsoft.Network/networkInterfaces",
+      "location": "[resourceGroup().location]",
+      "apiVersion": "2016-03-30",
+      "dependsOn": [],
+      "tags": {
+        "displayName": "addNetworkInterface"
+      },
+      "properties": {
+        "ipConfigurations": [
+          {
+            "name": "ipconfig1",
+            "properties": {
+              "privateIPAllocationMethod": "Dynamic",
+              "subnet": {
+                "id": "[parameters('vnet').subnets.lan.ref]"
+              }
+            }
+          }
+        ]
+      }
     }
-
   ],
   "outputs": {
   }
