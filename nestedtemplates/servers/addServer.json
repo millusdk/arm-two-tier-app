@@ -1,6 +1,6 @@
 ﻿{
   "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
-  "contentVersion": "0.1.0.0",
+  "contentVersion": "0.1.1.0",
   "parameters": {
     "addServer": {
       "type": "object"
@@ -10,7 +10,7 @@
   },
   "resources": [
     {
-      "name": "[parameters('addServer').availablitySet.name]",
+      "name": "[parameters('addServer').availabilitySet.name]",
       "type": "Microsoft.Compute/availabilitySets",
       "location": "[resourceGroup().location]",
       "apiVersion": "2015-06-15",
@@ -19,8 +19,8 @@
         "displayName": "addAvailabilitySet"
       },
       "properties": {
-        "platformUpdateDomainCount": "[parameters('addServer').availablitySet.updateDomainCount]",
-        "platformFaultDomainCount": "[parameters('addServer').availablitySet.faultDomainCount]"
+        "platformUpdateDomainCount": "[parameters('addServer').availabilitySet.updateDomainCount]",
+        "platformFaultDomainCount": "[parameters('addServer').availabilitySet.faultDomainCount]"
       }
     }
 
