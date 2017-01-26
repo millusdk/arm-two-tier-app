@@ -34,6 +34,13 @@
         "Premium_LRS"
       ]
     },
+    "serverAdminUserName": {
+      "type": "string",
+      "minLength": 1
+    },
+    "serverAdminPassword": {
+      "type": "securestring"
+    },
     "_artifactsLocation": {
       "type": "string",
       "defaultValue": "https://raw.githubusercontent.com/millusdk/Arm-two-tier-app/master"
@@ -143,7 +150,7 @@
         "mode": "Incremental",
         "templateLink": {
           "uri": "[concat(parameters('_artifactsLocation'), '/', variables('nestedTemplates').folder, '/', variables('nestedTemplates').servers.folder, '/', variables('nestedTemplates').servers.addServer)]",
-          "contentVersion": "0.4.0.0"
+          "contentVersion": "0.4.1.0"
         },
         "parameters": {
           "addServer": {
@@ -151,7 +158,8 @@
           },
           "admin": {
             "value": {
-              
+              "username": "[parameters('serverAdminUserName')]",
+              "password": "[parameters('serverAdminPassword')]" 
             } 
           },
           "vnet": {
