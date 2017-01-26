@@ -1,6 +1,6 @@
 ﻿{
   "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
-  "contentVersion": "0.4.2.0",
+  "contentVersion": "0.4.3.0",
   "parameters": {
     "addServer": {
       "type": "object"
@@ -16,17 +16,29 @@
   },
   "resources": [
     {
-      "name": "[replace(parameters('addServer').name, '-', '')]",
       "type": "Microsoft.Storage/storageAccounts",
+      "sku": {
+        "name": "[parameters('addServer').storage.type]",
+        "tier": "Standard"
+      },
+      "kind": "Storage",
+      "name": "[replace(parameters('addServer').name, '-', '')]",
+      "apiVersion": "2016-01-01",
       "location": "[resourceGroup().location]",
-      "apiVersion": "2015-06-15",
-      "dependsOn": [],
       "tags": {
         "displayName": "addServerStorage"
       },
       "properties": {
-        "accountType": "[parameters('addServer').storage.type]"
-      }
+        "encryption": {
+          "keySource": "Microsoft.Storage",
+          "services": {
+            "blob": {
+              "enabled": true
+            }
+          }
+        }
+      },
+      "dependsOn": []
     },
     {
       "name": "[parameters('addServer').availabilitySet.name]",
