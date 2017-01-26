@@ -70,7 +70,7 @@
         "mode": "Incremental",
         "templateLink": {
           "uri": "[concat(parameters('_artifactsLocation'), '/', variables('nestedTemplates').folder, '/', variables('nestedTemplates').infrastructure.folder, '/', variables('nestedTemplates').infrastructure.vnet)]",
-          "contentVersion": "0.1.1.0"
+          "contentVersion": "0.1.2.0"
         },
         "parameters": {
           "vnet": {
