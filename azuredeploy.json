@@ -52,11 +52,23 @@
         }
       }
     },
+    "addServer": {
+      "name": "[concat(resourceGroup().name, '-add01')]",
+      "availabilitySet": {
+        "name": "[concat(resourceGroup().name, '-as-add')]",
+        "updateDomainCount": 2,
+        "faultDomainCount": 2
+      }
+    }, 
     "nestedTemplates": {
       "folder": "nestedtemplates",
       "infrastructure": {
         "folder": "infrastructure",
-        "vnet": "vnet.json" 
+        "vnet": "vnet.json"
+      },
+      "servers": {
+        "folder": "servers",
+        "addServer": "addServer.json"  
       } 
     }
   },
@@ -74,7 +86,25 @@
         },
         "parameters": {
           "vnet": {
-            "value": "[variables('vnet')]"  
+            "value": "[variables('vnet')]"
+          }
+        }
+      }
+    },
+    {
+      "name": "AddServer",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2016-09-01",
+      "dependsOn": [],
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[concat(parameters('_artifactsLocation'), '/', variables('nestedTemplates').folder, '/', variables('nestedTemplates').servers.folder, '/', variables('nestedTemplates').infrastructure.addServer)]",
+          "contentVersion": "0.1.0.0"
+        },
+        "parameters": {
+          "addServer": {
+            "value": "[variables('addServer')]"
           }
         }
       }
@@ -83,7 +113,7 @@
   "outputs": {
     "vnet": {
       "type": "object",
-      "value": "[reference('Vnet')]"
+      "value": "[reference('Vnet').outputs]"
     } 
   }
 }
