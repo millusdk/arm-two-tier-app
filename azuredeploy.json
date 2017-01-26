@@ -55,7 +55,8 @@
     "addServer": {
       "name": "[concat(resourceGroup().name, '-add01')]",
       "ip": {
-        "name": "[concat(resourceGroup().name, '-add01', '-ip')]"
+        "name": "[concat(resourceGroup().name, '-add01', '-ip')]",
+        "private" : "10.0.1.4"
       },
       "nic": {
         "name": "[concat(resourceGroup().name, '-add01', '-nic')]"
@@ -88,9 +89,12 @@
         "mode": "Incremental",
         "templateLink": {
           "uri": "[concat(parameters('_artifactsLocation'), '/', variables('nestedTemplates').folder, '/', variables('nestedTemplates').infrastructure.folder, '/', variables('nestedTemplates').infrastructure.vnet)]",
-          "contentVersion": "0.1.2.0"
+          "contentVersion": "0.1.3.0"
         },
         "parameters": {
+          "addServer": {
+            "value": "[variables('addServer')]"
+          },
           "vnet": {
             "value": "[variables('vnet')]"
           }
@@ -108,7 +112,7 @@
         "mode": "Incremental",
         "templateLink": {
           "uri": "[concat(parameters('_artifactsLocation'), '/', variables('nestedTemplates').folder, '/', variables('nestedTemplates').servers.folder, '/', variables('nestedTemplates').servers.addServer)]",
-          "contentVersion": "0.2.0.0"
+          "contentVersion": "0.2.1.0"
         },
         "parameters": {
           "addServer": {

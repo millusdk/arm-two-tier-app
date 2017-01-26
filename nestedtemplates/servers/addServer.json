@@ -1,6 +1,6 @@
 ﻿{
   "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
-  "contentVersion": "0.2.0.0",
+  "contentVersion": "0.2.1.0",
   "parameters": {
     "addServer": {
       "type": "object"
@@ -28,7 +28,7 @@
       }
     },
     {
-      "name": "[concat(parameters('addServer').ip.name)]",
+      "name": "[parameters('addServer').ip.name]",
       "type": "Microsoft.Network/publicIPAddresses",
       "location": "[resourceGroup().location]",
       "apiVersion": "2015-06-15",
@@ -48,7 +48,9 @@
       "type": "Microsoft.Network/networkInterfaces",
       "location": "[resourceGroup().location]",
       "apiVersion": "2016-03-30",
-      "dependsOn": [],
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/publicIPAddresses', parameters('addServer').ip.name)]"
+      ],
       "tags": {
         "displayName": "addNetworkInterface"
       },
@@ -57,13 +59,23 @@
           {
             "name": "ipconfig1",
             "properties": {
-              "privateIPAllocationMethod": "Dynamic",
+              "privateIPAllocationMethod": "Static",
+              "privateIPAddress": "[parameters('addServer').ip.private]",
               "subnet": {
                 "id": "[parameters('vnet').subnets.lan.ref]"
+              },
+              "publicIPAddress": {
+                "id": "[resourceId('Microsoft.Network/publicIPAddresses', parameters('addServer').ip.name)]"
               }
             }
           }
-        ]
+        ],
+        "dnsSettings": {
+          "dnsServers": [
+            "8.8.8.8",
+            "8.8.4.4"
+          ]
+        }
       }
     }
   ],
