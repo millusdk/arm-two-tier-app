@@ -1,6 +1,6 @@
 ﻿{
   "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
-  "contentVersion": "0.4.3.0",
+  "contentVersion": "0.4.4.0",
   "parameters": {
     "addServer": {
       "type": "object"
@@ -19,7 +19,7 @@
       "type": "Microsoft.Storage/storageAccounts",
       "sku": {
         "name": "[parameters('addServer').storage.type]",
-        "tier": "Standard"
+        "tier": "[parameters('addServer').storage.sku]"
       },
       "kind": "Storage",
       "name": "[replace(parameters('addServer').name, '-', '')]",

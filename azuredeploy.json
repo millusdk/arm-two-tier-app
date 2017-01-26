@@ -86,6 +86,7 @@
       },
       "storage": {
         "type": "[parameters('addServerStorageType')]",
+        "sku": "[split(parameters('addServerStorageType'), '_')[0]]",
         "containerName": "vhds"
       },
       "disks": {
@@ -150,7 +151,7 @@
         "mode": "Incremental",
         "templateLink": {
           "uri": "[concat(parameters('_artifactsLocation'), '/', variables('nestedTemplates').folder, '/', variables('nestedTemplates').servers.folder, '/', variables('nestedTemplates').servers.addServer)]",
-          "contentVersion": "0.4.3.0"
+          "contentVersion": "0.4.4.0"
         },
         "parameters": {
           "addServer": {
