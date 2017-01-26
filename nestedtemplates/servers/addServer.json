@@ -1,9 +1,12 @@
 ﻿{
   "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
-  "contentVersion": "0.3.0.0",
+  "contentVersion": "0.4.0.0",
   "parameters": {
     "addServer": {
       "type": "object"
+    },
+    "admin": {
+      "type": "secureObject"
     },
     "vnet": {
       "type": "object"
@@ -86,6 +89,65 @@
           "dnsServers": [
             "8.8.8.8",
             "8.8.4.4"
+          ]
+        }
+      }
+    },
+    {
+      "name": "[parameters('addServer').name]",
+      "type": "Microsoft.Compute/virtualMachines",
+      "location": "[resourceGroup().location]",
+      "apiVersion": "2015-06-15",
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts', replace(parameters('addServer').name, '-', ''))]",
+        "[resourceId('Microsoft.Network/networkInterfaces', parameters('addServer').nic.name)]"
+      ],
+      "tags": {
+        "displayName": "addServer"
+      },
+      "properties": {
+        "hardwareProfile": {
+          "vmSize": "[parameters('addServer').vmSize]"
+        },
+        "osProfile": {
+          "computerName": "[parameters('addServer').name]",
+          "adminUsername": "[parameters('admin').username]",
+          "adminPassword": "[parameters('admin').password]"
+        },
+        "storageProfile": {
+          "imageReference": {
+            "publisher": "[parameters('addServer').image.publisher]",
+            "offer": "[parameters('addServer').image.offer]",
+            "sku": "[parameters('addServer').osVersion]",
+            "version": "latest"
+          },
+          "osDisk": {
+            "name": "[parameters('addServer').disks.os.name]",
+            "vhd": {
+              "uri": "[concat(reference(resourceId('Microsoft.Storage/storageAccounts', replace(parameters('addServer').name, '-', '')), '2016-01-01').primaryEndpoints.blob, parameters('addServer').storage.containerName, '/', parameters('addServer').disks.os.name, '.vhd')]"
+            },
+            "caching": "ReadWrite",
+            "createOption": "FromImage",
+            "diskSizeGB": "[parameters('addServer').disks.os.size]"
+          },
+          "dataDisks": [
+            {
+              "name": "[parameters('addServer').disks.data.name]",
+              "vhd": {
+                "uri": "[concat(reference(resourceId('Microsoft.Storage/storageAccounts', replace(parameters('addServer').name, '-', '')), '2016-01-01').primaryEndpoints.blob, parameters('addServer').storage.containerName, '/', parameters('addServer').disks.data.name, '.vhd')]"
+              },
+              "caching": "None",
+              "createOption": "Empty",
+              "diskSizeGB": "[parameters('addServer').disks.data.size]",
+              "lun": 0
+            }
+          ]
+        },
+        "networkProfile": {
+          "networkInterfaces": [
+            {
+              "id": "[resourceId('Microsoft.Network/networkInterfaces', parameters('addServer').nic.name)]"
+            }
           ]
         }
       }

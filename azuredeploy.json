@@ -67,7 +67,7 @@
       "name": "[concat(resourceGroup().name, '-add01')]",
       "ip": {
         "name": "[concat(resourceGroup().name, '-add01', '-ip')]",
-        "private" : "10.0.1.4"
+        "private": "10.0.1.4"
       },
       "nic": {
         "name": "[concat(resourceGroup().name, '-add01', '-nic')]"
@@ -78,8 +78,25 @@
         "faultDomainCount": 2
       },
       "storage": {
-        "type": "[parameters('addServerStorageType')]"  
-      } 
+        "type": "[parameters('addServerStorageType')]",
+        "containerName": "vhds"
+      },
+      "disks": {
+        "os": {
+          "name": "[concat(resourceGroup().name, '-add01', '-os-disk')]",
+          "size": 50
+        },
+        "data": {
+          "name": "[concat(resourceGroup().name, '-add01', '-data-disk')]",
+          "size": 15
+        }
+      },
+      "vmSize": "Standard_A1_v2",
+      "image": {
+        "publisher": "MicrosoftWindowsServer",
+        "osVersion": "2012-R2-Datacenter",
+        "offer": "WindowsServer"
+      }
     },
     "nestedTemplates": {
       "folder": "nestedtemplates",
@@ -126,11 +143,16 @@
         "mode": "Incremental",
         "templateLink": {
           "uri": "[concat(parameters('_artifactsLocation'), '/', variables('nestedTemplates').folder, '/', variables('nestedTemplates').servers.folder, '/', variables('nestedTemplates').servers.addServer)]",
-          "contentVersion": "0.3.0.0"
+          "contentVersion": "0.4.0.0"
         },
         "parameters": {
           "addServer": {
             "value": "[variables('addServer')]"
+          },
+          "admin": {
+            "value": {
+              
+            } 
           },
           "vnet": {
             "value": "[reference('Vnet').outputs.vnet.value]"
