@@ -89,7 +89,7 @@
         "mode": "Incremental",
         "templateLink": {
           "uri": "[concat(parameters('_artifactsLocation'), '/', variables('nestedTemplates').folder, '/', variables('nestedTemplates').infrastructure.folder, '/', variables('nestedTemplates').infrastructure.vnet)]",
-          "contentVersion": "0.1.4.0"
+          "contentVersion": "0.2.0.0"
         },
         "parameters": {
           "addServer": {

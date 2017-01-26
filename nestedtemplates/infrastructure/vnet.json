@@ -1,6 +1,6 @@
 ﻿{
   "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
-  "contentVersion": "0.1.4.0",
+  "contentVersion": "0.2.0.0",
   "parameters": {
     "addServer": {
       "type": "object"
@@ -17,7 +17,10 @@
       "type": "Microsoft.Network/virtualNetworks",
       "location": "[resourceGroup().location]",
       "apiVersion": "2016-03-30",
-      "dependsOn": [],
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('vnet').subnets.dmz.nsg.name)]",
+        "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('vnet').subnets.lan.nsg.name)]"
+      ],
       "tags": {
         "displayName": "Vnet"
       },
@@ -36,13 +39,19 @@
           {
             "name": "[parameters('vnet').subnets.dmz.name]",
             "properties": {
-              "addressPrefix": "[parameters('vnet').subnets.dmz.prefix]"
+              "addressPrefix": "[parameters('vnet').subnets.dmz.prefix]",
+              "networkSecurityGroup": {
+                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('vnet').subnets.dmz.nsg.name)]"
+              }
             }
           },
           {
             "name": "[parameters('vnet').subnets.lan.name]",
             "properties": {
-              "addressPrefix": "[parameters('vnet').subnets.lan.prefix]"
+              "addressPrefix": "[parameters('vnet').subnets.lan.prefix]",
+              "networkSecurityGroup": {
+                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('vnet').subnets.lan.nsg.name)]"
+              }
             }
           }
         ]
