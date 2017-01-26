@@ -1,6 +1,6 @@
 ﻿{
   "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
-  "contentVersion": "0.4.1.0",
+  "contentVersion": "0.4.2.0",
   "parameters": {
     "addServer": {
       "type": "object"
@@ -118,7 +118,7 @@
           "imageReference": {
             "publisher": "[parameters('addServer').image.publisher]",
             "offer": "[parameters('addServer').image.offer]",
-            "sku": "[parameters('addServer').osVersion]",
+            "sku": "[parameters('addServer').image.osVersion]",
             "version": "latest"
           },
           "osDisk": {
