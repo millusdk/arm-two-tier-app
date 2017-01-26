@@ -43,7 +43,7 @@
     {
       "apiVersion": "2015-06-15",
       "type": "Microsoft.Network/networkSecurityGroups",
-      "name": "[parameters('vnet').dmz.nsg.name]",
+      "name": "[parameters('vnet').subnets.dmz.nsg.name]",
       "location": "[resourceGroup().location]",
       "tags": {
         "displayName": "NSG - DMZ"
@@ -154,7 +154,7 @@
     {
       "apiVersion": "2015-06-15",
       "type": "Microsoft.Network/networkSecurityGroups",
-      "name": "[parameters('vnet').lan.nsg.name]",
+      "name": "[parameters('vnet').subnets.lan.nsg.name]",
       "location": "[resourceGroup().location]",
       "tags": {
         "displayName": "NSG - LAN"

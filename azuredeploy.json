@@ -24,7 +24,8 @@
       }
     },
     "_artifactsLocation": {
-      "type": "string"
+      "type": "string",
+      "defaultValue": "https://raw.githubusercontent.com/millusdk/Arm-two-tier-app/master"
     }
   },
   "variables": {
@@ -51,9 +52,13 @@
         }
       }
     },
-    "nestedTemplatesFolder": "nestedtemplates",
-    "infrastructureTemplatesFolder": "infrastructure", 
-    "VnetTemplateFileName": "vnet.json"
+    "nestedTemplates": {
+      "folder": "nestedtemplates",
+      "infrastructure": {
+        "folder": "infrastructure",
+        "vnet": "vnet.json" 
+      } 
+    }
   },
   "resources": [
     {
@@ -64,11 +69,13 @@
       "properties": {
         "mode": "Incremental",
         "templateLink": {
-          "uri": "[concat(parameters('_artifactsLocation'), '/', variables('nestedTemplatesFolder'), '/', variables('infrastructureTemplatesFolder'), '/', variables('vnetTemplateFileName'))]",
+          "uri": "[concat(parameters('_artifactsLocation'), '/', variables('nestedTemplates').folder, '/', variables('nestedTemplates').infrastructure.folder, '/', variables('nestedTemplates').infrastructure.vnet)]",
           "contentVersion": "0.1.0.0"
         },
         "parameters": {
-          "vnet": "[variables('vnet')]" 
+          "vnet": {
+            "value": "[variables('vnet')]"  
+          }
         }
       }
     }
