@@ -151,7 +151,7 @@
         "mode": "Incremental",
         "templateLink": {
           "uri": "[concat(parameters('_artifactsLocation'), '/', variables('nestedTemplates').folder, '/', variables('nestedTemplates').servers.folder, '/', variables('nestedTemplates').servers.addServer)]",
-          "contentVersion": "0.4.4.0"
+          "contentVersion": "0.4.5.0"
         },
         "parameters": {
           "addServer": {

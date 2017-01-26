@@ -1,6 +1,6 @@
 ﻿{
   "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
-  "contentVersion": "0.4.4.0",
+  "contentVersion": "0.4.5.0",
   "parameters": {
     "addServer": {
       "type": "object"
@@ -112,12 +112,16 @@
       "apiVersion": "2015-06-15",
       "dependsOn": [
         "[resourceId('Microsoft.Storage/storageAccounts', replace(parameters('addServer').name, '-', ''))]",
-        "[resourceId('Microsoft.Network/networkInterfaces', parameters('addServer').nic.name)]"
+        "[resourceId('Microsoft.Network/networkInterfaces', parameters('addServer').nic.name)]",
+        "[resourceId('Microsoft.Compute/availabilitySets', parameters('addServer').availabilitySet.name)]"
       ],
       "tags": {
         "displayName": "addServer"
       },
       "properties": {
+        "availabilitySet": {
+          "id": "[resourceId('Microsoft.Compute/availabilitySets', parameters('addServer').availabilitySet.name)]"
+        },
         "hardwareProfile": {
           "vmSize": "[parameters('addServer').vmSize]"
         },
