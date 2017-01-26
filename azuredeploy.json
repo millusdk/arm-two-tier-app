@@ -54,12 +54,18 @@
     },
     "addServer": {
       "name": "[concat(resourceGroup().name, '-add01')]",
+      "ip": {
+        "name": "[concat(resourceGroup().name, '-add01', '-ip')]"
+      },
+      "nic": {
+        "name": "[concat(resourceGroup().name, '-add01', '-nic')]"
+      },
       "availabilitySet": {
         "name": "[concat(resourceGroup().name, '-as-add')]",
         "updateDomainCount": 2,
         "faultDomainCount": 2
       }
-    }, 
+    },
     "nestedTemplates": {
       "folder": "nestedtemplates",
       "infrastructure": {
@@ -68,8 +74,8 @@
       },
       "servers": {
         "folder": "servers",
-        "addServer": "addServer.json"  
-      } 
+        "addServer": "addServer.json"
+      }
     }
   },
   "resources": [
@@ -109,8 +115,8 @@
             "value": "[variables('addServer')]"
           },
           "vnet": {
-            "value": "[reference('Vnet').outputs.vnet.value]" 
-          } 
+            "value": "[reference('Vnet').outputs.vnet.value]"
+          }
         }
       }
     }
@@ -119,6 +125,6 @@
     "vnet": {
       "type": "object",
       "value": "[reference('Vnet').outputs.vnet.value]"
-    } 
+    }
   }
 }
