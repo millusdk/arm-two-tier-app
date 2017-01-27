@@ -1,6 +1,6 @@
 ﻿{
   "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
-  "contentVersion": "0.4.5.0",
+  "contentVersion": "0.5.0.0",
   "parameters": {
     "addServer": {
       "type": "object"
@@ -10,6 +10,10 @@
     },
     "vnet": {
       "type": "object"
+    },
+    "_artifactsLocation": {
+      "type": "string",
+      "defaultValue": "https://raw.githubusercontent.com/millusdk/Arm-two-tier-app/master"
     }
   },
   "variables": {
@@ -166,7 +170,45 @@
             }
           ]
         }
-      }
+      },
+
+      "resources": [
+        {
+          "name": "CreateADForest",
+          "type": "extensions",
+          "location": "[resourceGroup().location]",
+          "apiVersion": "2015-06-15",
+          "dependsOn": [
+            "[resourceId('Microsoft.Compute/virtualMachines', parameters('addServer').name)]"
+          ],
+          "tags": {
+            "displayName": "CreateADForest"
+          },
+          "properties": {
+            "publisher": "Microsoft.Powershell",
+            "type": "DSC",
+            "typeHandlerVersion": "2.9",
+            "autoUpgradeMinorVersion": true,
+            "settings": {
+              "configuration": {
+                "url": "[concat(parameters('_artifactsLocation'), '/DSC/CreateADPDC.zip')]",
+                "script": "CreateADPDC.ps1",
+                "function": "CreateADPDC"
+              },
+              "configurationArguments": {
+                "DomainName": "[parameters('admin').domain]",
+                "AdminCreds": {
+                  "UserName": "[parameters('admin').username]",
+                  "Password": "PrivateSettingsRef:AdminPassword"
+                }
+              }
+            },
+            "protectedSettings": {
+              "AdminPassword": "[parameters('admin').password]"
+            }
+          }
+        }
+      ]
     }
   ],
   "outputs": {

@@ -41,35 +41,15 @@
     "serverAdminPassword": {
       "type": "securestring"
     },
+    "serverAdminDomain": {
+      "type": "string"
+    },
     "_artifactsLocation": {
       "type": "string",
       "defaultValue": "https://raw.githubusercontent.com/millusdk/Arm-two-tier-app/master"
     }
   },
   "variables": {
-    "vnet": {
-      "name": "[concat(resourceGroup().name, '-vnet')]",
-      "prefix": "[parameters('vnetPrefix')]",
-
-      "subnets": {
-        "dmz": {
-          "name": "[concat(resourceGroup().name, '-vnet', '-dmz')]",
-          "prefix": "[parameters('vnetDmzPrefix')]",
-
-          "nsg": {
-            "name": "[concat(resourceGroup().name, '-vnet', '-dmz', '-nsg')]"
-          }
-        },
-        "lan": {
-          "name": "[concat(resourceGroup().name, '-vnet', '-lan')]",
-          "prefix": "[parameters('vnetLanPrefix')]",
-
-          "nsg": {
-            "name": "[concat(resourceGroup().name, '-vnet', '-lan', '-nsg')]"
-          }
-        }
-      }
-    },
     "addServer": {
       "name": "[concat(resourceGroup().name, '-add01')]",
       "ip": {
@@ -104,6 +84,34 @@
         "publisher": "MicrosoftWindowsServer",
         "osVersion": "2012-R2-Datacenter",
         "offer": "WindowsServer"
+      }
+    },
+    "admin": {
+      "domain": "[parameters('serverAdminDomain')]", 
+      "username": "[parameters('serverAdminUserName')]",
+      "password": "[parameters('serverAdminPassword')]"
+    },
+    "vnet": {
+      "name": "[concat(resourceGroup().name, '-vnet')]",
+      "prefix": "[parameters('vnetPrefix')]",
+
+      "subnets": {
+        "dmz": {
+          "name": "[concat(resourceGroup().name, '-vnet', '-dmz')]",
+          "prefix": "[parameters('vnetDmzPrefix')]",
+
+          "nsg": {
+            "name": "[concat(resourceGroup().name, '-vnet', '-dmz', '-nsg')]"
+          }
+        },
+        "lan": {
+          "name": "[concat(resourceGroup().name, '-vnet', '-lan')]",
+          "prefix": "[parameters('vnetLanPrefix')]",
+
+          "nsg": {
+            "name": "[concat(resourceGroup().name, '-vnet', '-lan', '-nsg')]"
+          }
+        }
       }
     },
     "nestedTemplates": {
@@ -151,17 +159,14 @@
         "mode": "Incremental",
         "templateLink": {
           "uri": "[concat(parameters('_artifactsLocation'), '/', variables('nestedTemplates').folder, '/', variables('nestedTemplates').servers.folder, '/', variables('nestedTemplates').servers.addServer)]",
-          "contentVersion": "0.4.5.0"
+          "contentVersion": "0.5.0.0"
         },
         "parameters": {
           "addServer": {
             "value": "[variables('addServer')]"
           },
           "admin": {
-            "value": {
-              "username": "[parameters('serverAdminUserName')]",
-              "password": "[parameters('serverAdminPassword')]" 
-            } 
+            "value": "[variables('admin')]"
           },
           "vnet": {
             "value": "[reference('Vnet').outputs.vnet.value]"
