@@ -262,3 +262,6 @@ __pycache__/
 *.deployproj
 *.sln
 *.targets
+/DSC/SetupSqlServer
+/DSC/InstallIIS
+/DSC/CreateADPDC
