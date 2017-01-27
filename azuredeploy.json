@@ -159,7 +159,7 @@
         "mode": "Incremental",
         "templateLink": {
           "uri": "[concat(parameters('_artifactsLocation'), '/', variables('nestedTemplates').folder, '/', variables('nestedTemplates').servers.folder, '/', variables('nestedTemplates').servers.addServer)]",
-          "contentVersion": "0.5.0.0"
+          "contentVersion": "0.5.1.0"
         },
         "parameters": {
           "addServer": {
@@ -176,6 +176,10 @@
     }
   ],
   "outputs": {
+    "addServer": {
+      "type": "object",
+      "value": "[reference('AddServer').outputs.addServer.value]"
+    },
     "vnet": {
       "type": "object",
       "value": "[reference('Vnet').outputs.vnet.value]"
