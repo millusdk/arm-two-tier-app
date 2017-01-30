@@ -1,0 +1,108 @@
+﻿{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "0.1.0.0",
+  "parameters": {
+    "admin": {
+      "type": "secureObject"
+    },
+    "sqlServer": {
+      "type": "object"
+    },
+    "vnet": {
+      "type": "object"
+    },
+    "_artifactsLocation": {
+      "type": "string",
+      "defaultValue": "https://raw.githubusercontent.com/millusdk/Arm-two-tier-app/master"
+    }
+  },
+  "variables": {
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Storage/storageAccounts",
+      "sku": {
+        "name": "[parameters('sqlServer').storage.type]",
+        "tier": "[parameters('sqlServer').storage.sku]"
+      },
+      "kind": "Storage",
+      "name": "[replace(parameters('sqlServer').name, '-', '')]",
+      "apiVersion": "2016-01-01",
+      "location": "[resourceGroup().location]",
+      "tags": {
+        "displayName": "sqlServerStorage"
+      },
+      "properties": {
+        "encryption": {
+          "keySource": "Microsoft.Storage",
+          "services": {
+            "blob": {
+              "enabled": true
+            }
+          }
+        }
+      },
+      "dependsOn": []
+    },
+    {
+      "name": "[parameters('sqlServer').availabilitySet.name]",
+      "type": "Microsoft.Compute/availabilitySets",
+      "location": "[resourceGroup().location]",
+      "apiVersion": "2015-06-15",
+      "dependsOn": [],
+      "tags": {
+        "displayName": "sqlAvailabilitySet"
+      },
+      "properties": {
+        "platformUpdateDomainCount": "[parameters('sqlServer').availabilitySet.updateDomainCount]",
+        "platformFaultDomainCount": "[parameters('sqlServer').availabilitySet.faultDomainCount]"
+      }
+    },
+    {
+      "name": "[parameters('sqlServer').ip.name]",
+      "type": "Microsoft.Network/publicIPAddresses",
+      "location": "[resourceGroup().location]",
+      "apiVersion": "2015-06-15",
+      "dependsOn": [],
+      "tags": {
+        "displayName": "sqlServerIp"
+      },
+      "properties": {
+        "publicIPAllocationMethod": "Static",
+        "dnsSettings": {
+          "domainNameLabel": "[parameters('sqlServer').name]"
+        }
+      }
+    },
+    {
+      "name": "[parameters('sqlServer').nic.name]",
+      "type": "Microsoft.Network/networkInterfaces",
+      "location": "[resourceGroup().location]",
+      "apiVersion": "2016-03-30",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/publicIPAddresses', parameters('sqlServer').ip.name)]"
+      ],
+      "tags": {
+        "displayName": "sqlNetworkInterface"
+      },
+      "properties": {
+        "ipConfigurations": [
+          {
+            "name": "ipconfig1",
+            "properties": {
+              "privateIPAllocationMethod": "Dynamic",
+              "subnet": {
+                "id": "[parameters('vnet').subnets.lan.ref]"
+              },
+              "publicIPAddress": {
+                "id": "[resourceId('Microsoft.Network/publicIPAddresses', parameters('sqlServer').ip.name)]"
+              }
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "outputs": {
+  }
+}

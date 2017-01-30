@@ -34,6 +34,27 @@
         "Premium_LRS"
       ]
     },
+    "sqlServerStorageType": {
+      "type": "string",
+      "defaultValue": "Standard_LRS",
+      "allowedValues": [
+        "Standard_LRS",
+        "Standard_ZRS",
+        "Standard_GRS",
+        "Standard_RAGRS",
+        "Premium_LRS"
+      ]
+    },
+    "sqlServerImageSku": {
+      "type": "string",
+      "defaultValue": "Standard",
+      "allowedValues": [
+        "Express",
+        "Web",
+        "Standard",
+        "Enterprise"
+      ]
+    },
     "serverAdminUserName": {
       "type": "string",
       "minLength": 1
@@ -87,9 +108,50 @@
       }
     },
     "admin": {
-      "domain": "[parameters('serverAdminDomain')]", 
+      "domain": "[parameters('serverAdminDomain')]",
       "username": "[parameters('serverAdminUserName')]",
       "password": "[parameters('serverAdminPassword')]"
+    },
+    "sqlServer": {
+      "name": "[concat(resourceGroup().name, '-sql01')]",
+      "ip": {
+        "name": "[concat(resourceGroup().name, '-sql01', '-ip')]",
+        "private": "10.0.1.4"
+      },
+      "nic": {
+        "name": "[concat(resourceGroup().name, '-sql01', '-nic')]"
+      },
+      "availabilitySet": {
+        "name": "[concat(resourceGroup().name, '-as-sql')]",
+        "updateDomainCount": 2,
+        "faultDomainCount": 2
+      },
+      "storage": {
+        "type": "[parameters('sqlServerStorageType')]",
+        "sku": "[split(parameters('sqlServerStorageType'), '_')[0]]",
+        "containerName": "vhds"
+      },
+      "disks": {
+        "os": {
+          "name": "[concat(resourceGroup().name, '-sql01', '-os-disk')]",
+          "size": 130
+        },
+        "data": {
+          "name": "[concat(resourceGroup().name, '-sql01', '-data-disk')]",
+          "size": 100
+        },
+        "log": {
+          "name": "[concat(resourceGroup().name, '-sql01', '-log-disk')]",
+          "size": 20
+        }
+      },
+      "vmSize": "Standard_A1_v2",
+      "image": {
+        "publisher": "MicrosoftSQLServer",
+        "osVersion": "2012-R2-Datacenter",
+        "offer": "SQL2014SP2-WS2012R2",
+        "sku": "[parameters('sqlServerImageSku')]"
+      }
     },
     "vnet": {
       "name": "[concat(resourceGroup().name, '-vnet')]",
@@ -122,7 +184,8 @@
       },
       "servers": {
         "folder": "servers",
-        "addServer": "addServer.json"
+        "addServer": "addServer.json",
+        "sqlServer": "sqlServer.json" 
       }
     }
   },
@@ -167,6 +230,33 @@
           },
           "admin": {
             "value": "[variables('admin')]"
+          },
+          "vnet": {
+            "value": "[reference('Vnet').outputs.vnet.value]"
+          }
+        }
+      }
+    },
+    {
+      "name": "SqlServer",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2016-09-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments', 'Vnet')]",
+        "[resourceId('Microsoft.Resources/deployments', 'AddServer')]"
+      ],
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[concat(parameters('_artifactsLocation'), '/', variables('nestedTemplates').folder, '/', variables('nestedTemplates').servers.folder, '/', variables('nestedTemplates').servers.sqlServer)]",
+          "contentVersion": "0.1.0.0"
+        },
+        "parameters": {
+          "admin": {
+            "value": "[variables('admin')]"
+          },
+          "sqlServer": {
+            "value": "[variables('sqlServer')]" 
           },
           "vnet": {
             "value": "[reference('Vnet').outputs.vnet.value]"
