@@ -1,6 +1,6 @@
 ﻿{
   "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
-  "contentVersion": "0.2.0.0",
+  "contentVersion": "0.2.1.0",
   "parameters": {
     "admin": {
       "type": "secureObject"
@@ -30,7 +30,8 @@
       "apiVersion": "2016-01-01",
       "location": "[resourceGroup().location]",
       "tags": {
-        "displayName": "sqlServerStorage"
+        "displayName": "sqlServerStorage",
+        "server": "[parameters('sqlServer').name]" 
       },
       "properties": {
         "encryption": {
@@ -51,7 +52,8 @@
       "apiVersion": "2015-06-15",
       "dependsOn": [],
       "tags": {
-        "displayName": "sqlAvailabilitySet"
+        "displayName": "sqlAvailabilitySet",
+        "server": "[parameters('sqlServer').name]"
       },
       "properties": {
         "platformUpdateDomainCount": "[parameters('sqlServer').availabilitySet.updateDomainCount]",
@@ -83,7 +85,8 @@
         "[resourceId('Microsoft.Network/publicIPAddresses', parameters('sqlServer').ip.name)]"
       ],
       "tags": {
-        "displayName": "sqlNetworkInterface"
+        "displayName": "sqlNetworkInterface",
+        "server": "[parameters('sqlServer').name]"
       },
       "properties": {
         "ipConfigurations": [
@@ -113,7 +116,8 @@
         "[resourceId('Microsoft.Compute/availabilitySets', parameters('sqlServer').availabilitySet.name)]"
       ],
       "tags": {
-        "displayName": "sqlServer"
+        "displayName": "sqlServer",
+        "server": "[parameters('sqlServer').name]"
       },
       "properties": {
         "availabilitySet": {
@@ -184,7 +188,8 @@
             "[resourceId('Microsoft.Compute/virtualMachines', parameters('sqlserver').name)]"
           ],
           "tags": {
-            "displayName": "JoinDomain"
+            "displayName": "JoinDomain",
+            "server": "[parameters('sqlServer').name]"
           },
           "properties": {
             "publisher": "Microsoft.Compute",
@@ -212,7 +217,8 @@
             "[concat('Microsoft.Compute/virtualMachines/', parameters('sqlServer').name, '/extensions/JoinDomain')]"
           ],
           "tags": {
-            "displayName": "SetupSqlServer"
+            "displayName": "SetupSqlServer",
+            "server": "[parameters('sqlServer').name]"
           },
           "properties": {
             "publisher": "Microsoft.Powershell",

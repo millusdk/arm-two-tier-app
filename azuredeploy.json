@@ -222,7 +222,7 @@
         "mode": "Incremental",
         "templateLink": {
           "uri": "[concat(parameters('_artifactsLocation'), '/', variables('nestedTemplates').folder, '/', variables('nestedTemplates').servers.folder, '/', variables('nestedTemplates').servers.addServer)]",
-          "contentVersion": "0.5.1.0"
+          "contentVersion": "0.5.2.0"
         },
         "parameters": {
           "addServer": {
@@ -249,7 +249,7 @@
         "mode": "Incremental",
         "templateLink": {
           "uri": "[concat(parameters('_artifactsLocation'), '/', variables('nestedTemplates').folder, '/', variables('nestedTemplates').servers.folder, '/', variables('nestedTemplates').servers.sqlServer)]",
-          "contentVersion": "0.2.0.0"
+          "contentVersion": "0.2.1.0"
         },
         "parameters": {
           "admin": {
@@ -266,10 +266,6 @@
     }
   ],
   "outputs": {
-    "addServer": {
-      "type": "object",
-      "value": "[reference('AddServer').outputs.addServer.value]"
-    },
     "vnet": {
       "type": "object",
       "value": "[reference('Vnet').outputs.vnet.value]"

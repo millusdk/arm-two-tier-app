@@ -1,6 +1,6 @@
 ﻿{
   "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
-  "contentVersion": "0.5.1.0",
+  "contentVersion": "0.5.2.0",
   "parameters": {
     "addServer": {
       "type": "object"
@@ -30,7 +30,8 @@
       "apiVersion": "2016-01-01",
       "location": "[resourceGroup().location]",
       "tags": {
-        "displayName": "addServerStorage"
+        "displayName": "addServerStorage",
+        "server": "[parameters('addServer').name]"
       },
       "properties": {
         "encryption": {
@@ -51,7 +52,8 @@
       "apiVersion": "2015-06-15",
       "dependsOn": [],
       "tags": {
-        "displayName": "addAvailabilitySet"
+        "displayName": "addAvailabilitySet",
+        "server": "[parameters('addServer').name]"
       },
       "properties": {
         "platformUpdateDomainCount": "[parameters('addServer').availabilitySet.updateDomainCount]",
@@ -65,7 +67,8 @@
       "apiVersion": "2015-06-15",
       "dependsOn": [],
       "tags": {
-        "displayName": "addServerIp"
+        "displayName": "addServerIp",
+        "server": "[parameters('addServer').name]"
       },
       "properties": {
         "publicIPAllocationMethod": "Static",
@@ -83,7 +86,8 @@
         "[resourceId('Microsoft.Network/publicIPAddresses', parameters('addServer').ip.name)]"
       ],
       "tags": {
-        "displayName": "addNetworkInterface"
+        "displayName": "addNetworkInterface",
+        "server": "[parameters('addServer').name]"
       },
       "properties": {
         "ipConfigurations": [
@@ -120,7 +124,8 @@
         "[resourceId('Microsoft.Compute/availabilitySets', parameters('addServer').availabilitySet.name)]"
       ],
       "tags": {
-        "displayName": "addServer"
+        "displayName": "addServer",
+        "server": "[parameters('addServer').name]"
       },
       "properties": {
         "availabilitySet": {
@@ -182,7 +187,8 @@
             "[resourceId('Microsoft.Compute/virtualMachines', parameters('addServer').name)]"
           ],
           "tags": {
-            "displayName": "CreateADForest"
+            "displayName": "CreateADForest",
+            "server": "[parameters('addServer').name]"
           },
           "properties": {
             "publisher": "Microsoft.Powershell",
@@ -212,13 +218,5 @@
     }
   ],
   "outputs": {
-    "addServer": {
-      "type": "object",
-      "value": {
-        "domain": "[parameters('admin').domain]",
-        "username": "[parameters('admin').username]",
-        "password": "[parameters('admin').password]"
-      }
-    }
   }
 }
