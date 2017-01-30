@@ -265,3 +265,4 @@ __pycache__/
 /DSC/SetupSqlServer
 /DSC/InstallIIS
 /DSC/CreateADPDC
+azuredeploy.parameters.json
