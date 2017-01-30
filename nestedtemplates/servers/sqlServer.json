@@ -1,6 +1,6 @@
 ﻿{
   "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
-  "contentVersion": "0.1.0.0",
+  "contentVersion": "0.2.0.0",
   "parameters": {
     "admin": {
       "type": "secureObject"
@@ -101,6 +101,143 @@
           }
         ]
       }
+    },
+    {
+      "name": "[parameters('sqlServer').name]",
+      "type": "Microsoft.Compute/virtualMachines",
+      "location": "[resourceGroup().location]",
+      "apiVersion": "2015-06-15",
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts', replace(parameters('sqlServer').name, '-', ''))]",
+        "[resourceId('Microsoft.Network/networkInterfaces', parameters('sqlServer').nic.name)]",
+        "[resourceId('Microsoft.Compute/availabilitySets', parameters('sqlServer').availabilitySet.name)]"
+      ],
+      "tags": {
+        "displayName": "sqlServer"
+      },
+      "properties": {
+        "availabilitySet": {
+          "id": "[resourceId('Microsoft.Compute/availabilitySets', parameters('sqlServer').availabilitySet.name)]"
+        },
+        "hardwareProfile": {
+          "vmSize": "[parameters('sqlServer').vmSize]"
+        },
+        "osProfile": {
+          "computerName": "[parameters('sqlServer').name]",
+          "adminUsername": "[parameters('admin').username]",
+          "adminPassword": "[parameters('admin').password]"
+        },
+        "storageProfile": {
+          "imageReference": {
+            "publisher": "[parameters('sqlServer').image.publisher]",
+            "offer": "[parameters('sqlServer').image.offer]",
+            "sku": "[parameters('sqlServer').image.sku]",
+            "version": "latest"
+          },
+          "osDisk": {
+            "name": "[parameters('sqlServer').disks.os.name]",
+            "vhd": {
+              "uri": "[concat(reference(resourceId('Microsoft.Storage/storageAccounts', replace(parameters('sqlServer').name, '-', '')), '2016-01-01').primaryEndpoints.blob, parameters('sqlServer').storage.containerName, '/', parameters('sqlServer').disks.os.name, '.vhd')]"
+            },
+            "caching": "ReadWrite",
+            "createOption": "FromImage",
+            "diskSizeGB": "[parameters('sqlServer').disks.os.size]"
+          },
+          "dataDisks": [
+            {
+              "name": "[parameters('sqlServer').disks.data.name]",
+              "vhd": {
+                "uri": "[concat(reference(resourceId('Microsoft.Storage/storageAccounts', replace(parameters('sqlServer').name, '-', '')), '2016-01-01').primaryEndpoints.blob, parameters('sqlServer').storage.containerName, '/', parameters('sqlServer').disks.data.name, '.vhd')]"
+              },
+              "caching": "None",
+              "createOption": "Empty",
+              "diskSizeGB": "[parameters('sqlServer').disks.data.size]",
+              "lun": 0
+            },
+            {
+              "name": "[parameters('sqlServer').disks.log.name]",
+              "vhd": {
+                "uri": "[concat(reference(resourceId('Microsoft.Storage/storageAccounts', replace(parameters('sqlServer').name, '-', '')), '2016-01-01').primaryEndpoints.blob, parameters('sqlServer').storage.containerName, '/', parameters('sqlServer').disks.log.name, '.vhd')]"
+              },
+              "caching": "None",
+              "createOption": "Empty",
+              "diskSizeGB": "[parameters('sqlServer').disks.log.size]",
+              "lun": 1
+            }
+          ]
+        },
+        "networkProfile": {
+          "networkInterfaces": [
+            {
+              "id": "[resourceId('Microsoft.Network/networkInterfaces', parameters('sqlServer').nic.name)]"
+            }
+          ]
+        }
+      },
+      "resources": [
+        {
+          "type": "extensions",
+          "name": "JoinDomain",
+          "location": "[resourceGroup().location]",
+          "apiVersion": "2015-06-15",
+          "dependsOn": [
+            "[resourceId('Microsoft.Compute/virtualMachines', parameters('sqlserver').name)]"
+          ],
+          "tags": {
+            "displayName": "JoinDomain"
+          },
+          "properties": {
+            "publisher": "Microsoft.Compute",
+            "type": "JsonADDomainExtension",
+            "typeHandlerVersion": "1.3",
+            "autoUpgradeMinorVersion": true,
+            "settings": {
+              "Name": "[parameters('admin').domain]",
+              "User": "[concat(parameters('admin').username, '@', parameters('admin').domain)]",
+              "Restart": "true",
+              "Options": "3"
+            },
+            "protectedsettings": {
+              "Password": "[parameters('admin').password]"
+            }
+          }
+        },
+        {
+          "name": "SetupSqlServer",
+          "type": "extensions",
+          "location": "[resourceGroup().location]",
+          "apiVersion": "2015-06-15",
+          "dependsOn": [
+            "[resourceId('Microsoft.Compute/virtualMachines', parameters('sqlserver').name)]",
+            "[concat('Microsoft.Compute/virtualMachines/', parameters('sqlServer').name, '/extensions/JoinDomain')]"
+          ],
+          "tags": {
+            "displayName": "SetupSqlServer"
+          },
+          "properties": {
+            "publisher": "Microsoft.Powershell",
+            "type": "DSC",
+            "typeHandlerVersion": "2.9",
+            "autoUpgradeMinorVersion": true,
+            "settings": {
+              "configuration": {
+                "url": "[concat(parameters('_artifactsLocation'), '/DSC/SetupSqlServer.zip')]",
+                "script": "SetupSqlServer.ps1",
+                "function": "SetupSqlServer"
+              },
+              "configurationArguments": {
+                "AdminCreds": {
+                  "UserName": "[parameters('admin').username]",
+                  "Password": "PrivateSettingsRef:AdminPassword"
+                }
+              }
+            },
+            "protectedSettings": {
+              "AdminPassword": "[parameters('admin').password]"
+            }
+          }
+        }
+      ]
     }
   ],
   "outputs": {

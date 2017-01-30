@@ -138,11 +138,11 @@
         },
         "data": {
           "name": "[concat(resourceGroup().name, '-sql01', '-data-disk')]",
-          "size": 100
+          "size": 200
         },
         "log": {
           "name": "[concat(resourceGroup().name, '-sql01', '-log-disk')]",
-          "size": 20
+          "size": 25
         }
       },
       "vmSize": "Standard_A1_v2",
@@ -249,7 +249,7 @@
         "mode": "Incremental",
         "templateLink": {
           "uri": "[concat(parameters('_artifactsLocation'), '/', variables('nestedTemplates').folder, '/', variables('nestedTemplates').servers.folder, '/', variables('nestedTemplates').servers.sqlServer)]",
-          "contentVersion": "0.1.0.0"
+          "contentVersion": "0.2.0.0"
         },
         "parameters": {
           "admin": {
